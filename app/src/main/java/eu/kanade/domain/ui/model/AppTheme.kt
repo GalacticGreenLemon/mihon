@@ -4,6 +4,7 @@ import dev.icerock.moko.resources.StringResource
 import tachiyomi.i18n.MR
 
 enum class AppTheme(val titleRes: StringResource?) {
+    REMON(MR.strings.theme_remon),
     DEFAULT(MR.strings.label_default),
     MONET(MR.strings.theme_monet),
     CATPPUCCIN(MR.strings.theme_catppuccin),

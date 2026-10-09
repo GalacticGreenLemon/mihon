@@ -324,6 +324,46 @@
         <item name="colorSurfaceContainerLowest">@color/strawberry_surfaceContainerLowest</item>
     </style>
 
+    <!--== Remon Theme ==-->
+    <style name="Theme.Tachiyomi.Remon">
+        <!-- Theme Colors -->
+        <item name="colorPrimary">@color/remon_primary</item>
+        <item name="colorOnPrimary">@color/remon_onPrimary</item>
+        <item name="colorPrimaryContainer">@color/remon_primaryContainer</item>
+        <item name="colorOnPrimaryContainer">@color/remon_onPrimaryContainer</item>
+        <item name="colorPrimaryInverse">@color/remon_inversePrimary</item>
+        <item name="colorSecondary">@color/remon_secondary</item>
+        <item name="colorOnSecondary">@color/remon_onSecondary</item>
+        <item name="colorSecondaryContainer">@color/remon_secondaryContainer</item>
+        <item name="colorOnSecondaryContainer">@color/remon_onSecondaryContainer</item>
+        <item name="colorTertiary">@color/remon_tertiary</item>
+        <item name="colorOnTertiary">@color/remon_onTertiary</item>
+        <item name="colorTertiaryContainer">@color/remon_tertiaryContainer</item>
+        <item name="colorOnTertiaryContainer">@color/remon_onTertiaryContainer</item>
+        <item name="android:colorBackground">@color/remon_background</item>
+        <item name="colorOnBackground">@color/remon_onBackground</item>
+        <item name="colorSurface">@color/remon_surface</item>
+        <item name="colorOnSurface">@color/remon_onSurface</item>
+        <item name="colorSurfaceVariant">@color/remon_surfaceVariant</item>
+        <item name="colorOnSurfaceVariant">@color/remon_onSurfaceVariant</item>
+        <item name="colorSurfaceInverse">@color/remon_inverseSurface</item>
+        <item name="colorOnSurfaceInverse">@color/remon_inverseOnSurface</item>
+        <item name="colorError">@color/remon_error</item>
+        <item name="colorOnError">@color/remon_onError</item>
+        <item name="colorErrorContainer">@color/remon_errorContainer</item>
+        <item name="colorOnErrorContainer">@color/remon_onErrorContainer</item>
+        <item name="colorOutline">@color/remon_outline</item>
+        <item name="colorOutlineVariant">@color/remon_outlineVariant</item>
+        <item name="scrimBackground">@color/remon_scrim</item>
+        <item name="colorSurfaceBright">@color/remon_surfaceBright</item>
+        <item name="colorSurfaceDim">@color/remon_surfaceDim</item>
+        <item name="colorSurfaceContainer">@color/remon_surfaceContainer</item>
+        <item name="colorSurfaceContainerHigh">@color/remon_surfaceContainerHigh</item>
+        <item name="colorSurfaceContainerHighest">@color/remon_surfaceContainerHighest</item>
+        <item name="colorSurfaceContainerLow">@color/remon_surfaceContainerLow</item>
+        <item name="colorSurfaceContainerLowest">@color/remon_surfaceContainerLowest</item>
+    </style>
+
     <!--== Tako Theme ==-->
     <style name="Theme.Tachiyomi.Tako">
         <!-- Theme Colors -->

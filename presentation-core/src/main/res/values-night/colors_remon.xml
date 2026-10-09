@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Colors for Remon theme: red on black, with a lemon yellow accent for the downloaded badge.
+  ~ Keep in sync with RemonColorScheme.kt
+-->
+<resources>
+    <color name="remon_primary">#FF5A5F</color>
+    <color name="remon_onPrimary">#2B0003</color>
+    <color name="remon_primaryContainer">#B3121B</color>
+    <color name="remon_onPrimaryContainer">#FFFFFF</color>
+    <color name="remon_secondary">#FF3B3B</color>
+    <color name="remon_onSecondary">#000000</color>
+    <color name="remon_secondaryContainer">#5C0A0E</color>
+    <color name="remon_onSecondaryContainer">#FFDADA</color>
+    <color name="remon_tertiary">#FFD54F</color>
+    <color name="remon_onTertiary">#1F1A00</color>
+    <color name="remon_tertiaryContainer">#6B5600</color>
+    <color name="remon_onTertiaryContainer">#FFF3C4</color>
+    <color name="remon_error">#FFB4AB</color>
+    <color name="remon_onError">#690005</color>
+    <color name="remon_errorContainer">#93000A</color>
+    <color name="remon_onErrorContainer">#FFDAD6</color>
+    <color name="remon_background">#000000</color>
+    <color name="remon_onBackground">#F2E7E7</color>
+    <color name="remon_surface">#000000</color>
+    <color name="remon_onSurface">#F2E7E7</color>
+    <color name="remon_surfaceVariant">#1C1212</color>
+    <color name="remon_onSurfaceVariant">#D8C2C2</color>
+    <color name="remon_outline">#9E8A8A</color>
+    <color name="remon_outlineVariant">#4A3434</color>
+    <color name="remon_scrim">#000000</color>
+    <color name="remon_inverseSurface">#F2E7E7</color>
+    <color name="remon_inverseOnSurface">#2A1F1F</color>
+    <color name="remon_inversePrimary">#B3121B</color>
+    <color name="remon_surfaceDim">#000000</color>
+    <color name="remon_surfaceBright">#2E2222</color>
+    <color name="remon_surfaceContainerLowest">#000000</color>
+    <color name="remon_surfaceContainerLow">#0D0808</color>
+    <color name="remon_surfaceContainer">#140C0C</color>
+    <color name="remon_surfaceContainerHigh">#1E1414</color>
+    <color name="remon_surfaceContainerHighest">#281B1B</color>
+</resources>

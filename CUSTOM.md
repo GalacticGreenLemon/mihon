@@ -18,6 +18,8 @@ Remon (レモン, "lemon") is a personal build of [Mihon](https://github.com/mih
     Android may ask you to confirm each one. Restore a backup first, so the extension repos are back and the
     extensions are trusted.
   - *Download chapters from Google Drive*: downloads the chapters that aren't on the device in the background.
+- **Remon theme and icon.** A red-on-black theme (red on white in light mode) is the default, and the launcher icon
+  is れ in a red ring, in the style of Mihon's み icon.
 - **Named Remon, package name `app.remon`**, so it installs next to the official app instead of clashing with it.
   To move your library over, create a backup in the official app and restore it in this one.
 - **No telemetry and no in-app updater.** The updater would offer official releases, which can't install over this build.
