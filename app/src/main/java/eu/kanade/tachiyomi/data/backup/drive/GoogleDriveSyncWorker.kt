@@ -128,8 +128,10 @@ class GoogleDriveSyncWorker(private val context: Context, workerParams: WorkerPa
 
     private suspend fun uploadDownloads(folderId: String) {
         val downloadsDir = storageManager.getDownloadsDirectory() ?: return
+        // Null means the folder couldn't be read (e.g. lost permission), which must not look like "everything deleted"
+        val sourceDirs = downloadsDir.listFiles() ?: return
 
-        val mangaDirs = downloadsDir.listFiles().orEmpty()
+        val mangaDirs = sourceDirs
             .filter { it.isDirectory }
             .flatMap { sourceDir ->
                 sourceDir.listFiles().orEmpty()
@@ -137,27 +139,84 @@ class GoogleDriveSyncWorker(private val context: Context, workerParams: WorkerPa
                     .map { sourceDir to it }
             }
 
+        val record = SyncedChapters.load(context, downloadsDir.uri.toString())
+        val onDevice = HashSet<String>()
+        val synced = HashSet<String>()
+
         val sourceFolders = mutableMapOf<String, String>()
         mangaDirs.forEachIndexed { index, (sourceDir, mangaDir) ->
             val chapters = mangaDir.listFiles().orEmpty().filter { it.isChapter() }
             if (chapters.isEmpty()) return@forEachIndexed
 
-            notifier.showGoogleDriveProgress(mangaDir.name.orEmpty(), index, mangaDirs.size)
+            val sourceName = sourceDir.name!!
+            val mangaName = mangaDir.name!!
+            fun key(chapter: UniFile) = chapterKey(sourceName, mangaName, chapter.cbzName())
+            chapters.mapTo(onDevice, ::key)
+
+            notifier.showGoogleDriveProgress(mangaName, index, mangaDirs.size)
 
             attempt {
-                val sourceName = sourceDir.name!!
                 val sourceFolderId = sourceFolders.getOrPut(sourceName) {
                     drive.findOrCreateFolder(sourceName, folderId)
                 }
-                val mangaFolderId = drive.findOrCreateFolder(mangaDir.name!!, sourceFolderId)
+                val mangaFolderId = drive.findOrCreateFolder(mangaName, sourceFolderId)
                 val existing = drive.listChildren(mangaFolderId).mapTo(HashSet()) { it.name }
 
-                chapters
-                    .filter { it.cbzName() !in existing }
-                    .forEach { chapter -> attempt { uploadChapter(chapter, mangaFolderId) } }
+                chapters.forEach { chapter ->
+                    if (chapter.cbzName() in existing) {
+                        synced += key(chapter)
+                    } else {
+                        attempt {
+                            uploadChapter(chapter, mangaFolderId)
+                            synced += key(chapter)
+                        }
+                    }
+                }
             }
         }
+
+        // Chapters that were on the phone at the last run but are gone now were deleted (or read and auto-deleted)
+        val deleted = record.chapters - onDevice
+        val notDeleted = when {
+            // With nothing on the phone at all, assume the folder isn't really readable and try again next time
+            onDevice.isEmpty() -> deleted
+            backupPreferences.googleDriveMirrorDeletions.get() -> deleteFromDrive(folderId, deleted)
+            // Kept on Drive for good, so turning the option on later doesn't delete them after all
+            else -> emptySet()
+        }
+
+        SyncedChapters.save(context, record.downloadsDir, synced + (record.chapters intersect onDevice) + notDeleted)
     }
+
+    /** Deletes the given chapters from Drive, and returns the ones that couldn't be deleted. */
+    private suspend fun deleteFromDrive(folderId: String, chapters: Set<String>): Set<String> {
+        val failed = HashSet<String>()
+        chapters.groupBy { it.substringBeforeLast('/') }.forEach { (mangaPath, keys) ->
+            val (sourceName, mangaName) = mangaPath.split('/', limit = 2)
+            try {
+                val sourceFolderId = drive.findFolder(sourceName, folderId) ?: return@forEach
+                val mangaFolderId = drive.findFolder(mangaName, sourceFolderId) ?: return@forEach
+                val names = keys.mapTo(HashSet()) { it.substringAfterLast('/') }
+
+                val files = drive.listChildren(mangaFolderId)
+                files.filter { it.name in names }.forEach { drive.delete(it.id) }
+
+                // Don't leave empty folders behind for manga with no chapters left
+                if (files.all { it.name in names }) drive.delete(mangaFolderId)
+                if (drive.listChildren(sourceFolderId).isEmpty()) drive.delete(sourceFolderId)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: DriveNotAuthorizedException) {
+                throw e
+            } catch (e: Exception) {
+                logcat(LogPriority.ERROR, e) { "Failed to delete chapters of $mangaPath from Google Drive" }
+                failed += keys
+            }
+        }
+        return failed
+    }
+
+    private fun chapterKey(source: String, manga: String, chapter: String) = "$source/$manga/$chapter"
 
     private suspend fun uploadChapter(chapter: UniFile, folderId: String) {
         if (chapter.isFile) {

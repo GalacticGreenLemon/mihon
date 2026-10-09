@@ -31,6 +31,11 @@ class BackupPreferences(
         false,
     )
 
+    val googleDriveMirrorDeletions: Preference<Boolean> = preferenceStore.getBoolean(
+        "google_drive_mirror_deletions",
+        true,
+    )
+
     val googleDriveDownloadsWifiOnly: Preference<Boolean> = preferenceStore.getBoolean(
         "google_drive_downloads_wifi_only",
         true,

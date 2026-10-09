@@ -643,7 +643,9 @@
     <string name="pref_google_drive_upload_extensions">Upload installed extensions</string>
     <string name="pref_google_drive_upload_extensions_summary">Saves the extension APKs to the \"Extensions\" folder, so you can reinstall them even if the source disappears</string>
     <string name="pref_google_drive_upload_downloads">Upload downloaded chapters</string>
-    <string name="pref_google_drive_upload_downloads_summary">Copies new downloads to the \"Downloads\" folder as CBZ files. Chapters you delete on the phone stay on Drive</string>
+    <string name="pref_google_drive_upload_downloads_summary">Copies new downloads to the \"Downloads\" folder as CBZ files</string>
+    <string name="pref_google_drive_mirror_deletions">Delete chapters from Drive when deleted here</string>
+    <string name="pref_google_drive_mirror_deletions_summary">Turn off to keep every uploaded chapter on Drive as a permanent library</string>
     <string name="pref_google_drive_downloads_wifi_only">Only upload chapters over Wi-Fi</string>
     <string name="google_drive_downloading">Downloading from Google Drive</string>
     <string name="pref_google_drive_restore_backup">Restore backup from Google Drive</string>

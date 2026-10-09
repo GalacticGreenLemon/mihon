@@ -400,6 +400,12 @@ object SettingsDataScreen : SearchableSettings {
                     visible = enabled,
                 ),
                 Preference.PreferenceItem.SwitchPreference(
+                    preference = backupPreferences.googleDriveMirrorDeletions,
+                    title = stringResource(MR.strings.pref_google_drive_mirror_deletions),
+                    subtitle = stringResource(MR.strings.pref_google_drive_mirror_deletions_summary),
+                    visible = enabled && uploadDownloads,
+                ),
+                Preference.PreferenceItem.SwitchPreference(
                     preference = backupPreferences.googleDriveDownloadsWifiOnly,
                     title = stringResource(MR.strings.pref_google_drive_downloads_wifi_only),
                     visible = enabled && uploadDownloads,

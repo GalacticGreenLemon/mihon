@@ -10,8 +10,10 @@ Remon (レモン, "lemon") is a personal build of [Mihon](https://github.com/mih
   a separate job uploads only what's missing on Drive:
   - `Remon backups/Extensions/<package>_v<version>.apk`, with only the newest version of each kept.
   - `Remon backups/Downloads/<source>/<manga>/<chapter>.cbz`, matching the local downloads folder. Chapters saved as
-    image folders are zipped into CBZ files on the way up. Chapters you delete on the phone are **not** deleted
-    from Drive. By default this only runs on Wi-Fi.
+    image folders are zipped into CBZ files on the way up. Chapters you delete on the phone (including ones
+    deleted automatically after reading) are deleted from Drive too, unless you turn off
+    *Delete chapters from Drive when deleted here* to keep a permanent library. Only chapters this phone uploaded
+    or had before count, so a new phone or a new storage folder never wipes Drive. By default this only runs on Wi-Fi.
 - **Restore from Drive inside the app**, in the same section:
   - *Restore backup from Google Drive*: pick one of the uploaded backups, then the usual restore screen opens.
   - *Install extensions from Google Drive*: installs the uploaded extensions that aren't on the device.
