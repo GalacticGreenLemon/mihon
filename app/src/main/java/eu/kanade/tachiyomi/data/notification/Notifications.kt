@@ -58,6 +58,8 @@ object Notifications {
     const val CHANNEL_BACKUP_RESTORE_COMPLETE = "backup_restore_complete_channel_v2"
     const val ID_BACKUP_COMPLETE = -502
     const val ID_RESTORE_COMPLETE = -504
+    const val ID_GOOGLE_DRIVE_PROGRESS = -505
+    const val ID_GOOGLE_DRIVE_ERROR = -506
 
     /**
      * Notification channel used for Incognito Mode

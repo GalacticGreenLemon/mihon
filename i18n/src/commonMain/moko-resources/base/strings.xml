@@ -638,6 +638,13 @@
     <string name="google_drive_backup_started">Backup started</string>
     <string name="google_drive_auth_failed">Couldn\'t connect to Google Drive: %s</string>
     <string name="google_drive_upload_error">Google Drive upload failed</string>
+    <string name="google_drive_uploading">Uploading to Google Drive</string>
+    <string name="pref_google_drive_upload_extensions">Upload installed extensions</string>
+    <string name="pref_google_drive_upload_extensions_summary">Saves the extension APKs to the \"Extensions\" folder, so you can reinstall them even if the source disappears</string>
+    <string name="pref_google_drive_upload_downloads">Upload downloaded chapters</string>
+    <string name="pref_google_drive_upload_downloads_summary">Copies new downloads to the \"Downloads\" folder as CBZ files. Chapters you delete on the phone stay on Drive</string>
+    <string name="pref_google_drive_downloads_wifi_only">Only upload chapters over Wi-Fi</string>
+    <string name="google_drive_sync_failed">%1$d uploads failed. Last error: %2$s</string>
     <string name="label_data">Data</string>
     <string name="pref_storage_usage">Storage usage</string>
     <string name="available_disk_space_info">Available: %1$s / Total: %2$s</string>

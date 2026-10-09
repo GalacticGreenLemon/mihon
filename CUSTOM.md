@@ -6,6 +6,14 @@ Changes compared to upstream Mihon:
   Google Drive and only the newest few are kept there (10 by default). Set it up in
   *Settings → Data and storage → Google Drive*, which also has a "Back up to Google Drive now" button.
   The app only gets the `drive.file` permission, so it can see the files it uploaded and nothing else in your Drive.
+- **Optional: extensions and downloaded chapters.** Two more switches in the same section. After each automatic backup,
+  a separate job uploads only what's missing on Drive:
+  - `Mihon backups/Extensions/<package>_v<version>.apk`, with only the newest version of each kept. To restore one,
+    download the APK on your phone and install it.
+  - `Mihon backups/Downloads/<source>/<manga>/<chapter>.cbz`, matching the local downloads folder. Chapters saved as
+    image folders are zipped into CBZ files on the way up. To restore, copy the folders back into Mihon's `downloads`
+    folder, then use *Settings → Advanced → Reindex downloads* if they don't show up right away.
+    Chapters you delete on the phone are **not** deleted from Drive. By default this only runs on Wi-Fi.
 - **Package name is `app.mihon.custom`**, so this build installs next to the official app instead of clashing with it.
   To move your library over, create a backup in the official app and restore it in this one.
 - **No telemetry and no in-app updater.** The updater would offer official releases, which can't install over this build.

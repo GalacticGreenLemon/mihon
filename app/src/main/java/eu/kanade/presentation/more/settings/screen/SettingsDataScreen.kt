@@ -286,6 +286,7 @@ object SettingsDataScreen : SearchableSettings {
 
         val enabled by backupPreferences.googleDriveEnabled.collectAsState()
         val lastUpload by backupPreferences.lastGoogleDriveUploadTimestamp.collectAsState()
+        val uploadDownloads by backupPreferences.googleDriveUploadDownloads.collectAsState()
 
         fun enable() {
             backupPreferences.googleDriveEnabled.set(true)
@@ -343,6 +344,23 @@ object SettingsDataScreen : SearchableSettings {
                     entries = listOf(3, 5, 10, 20, 50).associateWith { it.toString() },
                     title = stringResource(MR.strings.pref_google_drive_max_backups),
                     visible = enabled,
+                ),
+                Preference.PreferenceItem.SwitchPreference(
+                    preference = backupPreferences.googleDriveUploadExtensions,
+                    title = stringResource(MR.strings.pref_google_drive_upload_extensions),
+                    subtitle = stringResource(MR.strings.pref_google_drive_upload_extensions_summary),
+                    visible = enabled,
+                ),
+                Preference.PreferenceItem.SwitchPreference(
+                    preference = backupPreferences.googleDriveUploadDownloads,
+                    title = stringResource(MR.strings.pref_google_drive_upload_downloads),
+                    subtitle = stringResource(MR.strings.pref_google_drive_upload_downloads_summary),
+                    visible = enabled,
+                ),
+                Preference.PreferenceItem.SwitchPreference(
+                    preference = backupPreferences.googleDriveDownloadsWifiOnly,
+                    title = stringResource(MR.strings.pref_google_drive_downloads_wifi_only),
+                    visible = enabled && uploadDownloads,
                 ),
                 Preference.PreferenceItem.TextPreference(
                     title = stringResource(MR.strings.pref_google_drive_backup_now),

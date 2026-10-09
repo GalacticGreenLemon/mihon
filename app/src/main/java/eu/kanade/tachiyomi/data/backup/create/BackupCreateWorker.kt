@@ -20,6 +20,7 @@ import com.hippo.unifile.UniFile
 import dev.zacsweers.metro.Inject
 import eu.kanade.tachiyomi.data.backup.BackupNotifier
 import eu.kanade.tachiyomi.data.backup.drive.GoogleDriveBackupUploader
+import eu.kanade.tachiyomi.data.backup.drive.GoogleDriveSyncWorker
 import eu.kanade.tachiyomi.data.backup.restore.BackupRestoreWorker
 import eu.kanade.tachiyomi.data.notification.Notifications
 import eu.kanade.tachiyomi.util.system.cancelNotification
@@ -77,6 +78,8 @@ class BackupCreateWorker(private val context: Context, workerParams: WorkerParam
                 notifier.showBackupComplete(UniFile.fromUri(context, location.toUri())!!)
             } else if (backupPreferences.googleDriveEnabled.get()) {
                 uploadToGoogleDrive(location)
+                // Extensions and downloads can take a long time, so they're uploaded in their own job
+                GoogleDriveSyncWorker.start(context)
             }
             Result.success()
         } catch (e: Exception) {

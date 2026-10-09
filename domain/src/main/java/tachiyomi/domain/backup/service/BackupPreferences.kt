@@ -21,6 +21,21 @@ class BackupPreferences(
 
     val googleDriveEnabled: Preference<Boolean> = preferenceStore.getBoolean("google_drive_backup_enabled", false)
 
+    val googleDriveUploadExtensions: Preference<Boolean> = preferenceStore.getBoolean(
+        "google_drive_upload_extensions",
+        false,
+    )
+
+    val googleDriveUploadDownloads: Preference<Boolean> = preferenceStore.getBoolean(
+        "google_drive_upload_downloads",
+        false,
+    )
+
+    val googleDriveDownloadsWifiOnly: Preference<Boolean> = preferenceStore.getBoolean(
+        "google_drive_downloads_wifi_only",
+        true,
+    )
+
     val googleDriveMaxBackups: Preference<Int> = preferenceStore.getInt("google_drive_max_backups", 10)
 
     val googleDriveFolderId: Preference<String> = preferenceStore.getString(

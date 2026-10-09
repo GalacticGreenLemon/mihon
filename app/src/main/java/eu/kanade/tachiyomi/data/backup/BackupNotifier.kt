@@ -74,10 +74,23 @@ class BackupNotifier(
         with(completeNotificationBuilder) {
             setContentTitle(context.stringResource(MR.strings.google_drive_upload_error))
             setContentText(error)
+            setStyle(NotificationCompat.BigTextStyle().bigText(error))
             clearActions()
 
-            show(Notifications.ID_BACKUP_COMPLETE)
+            show(Notifications.ID_GOOGLE_DRIVE_ERROR)
         }
+    }
+
+    fun showGoogleDriveProgress(content: String = "", progress: Int = 0, max: Int = 0): NotificationCompat.Builder {
+        val builder = with(progressNotificationBuilder) {
+            setContentTitle(context.stringResource(MR.strings.google_drive_uploading))
+            setContentText(content)
+            setProgress(max, progress, max == 0)
+        }
+
+        builder.show(Notifications.ID_GOOGLE_DRIVE_PROGRESS)
+
+        return builder
     }
 
     fun showBackupComplete(file: UniFile) {
