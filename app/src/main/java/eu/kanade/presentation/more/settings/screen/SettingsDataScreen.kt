@@ -8,6 +8,7 @@ import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
@@ -16,6 +17,8 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
@@ -37,6 +40,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
@@ -50,6 +54,8 @@ import eu.kanade.presentation.more.settings.widget.BasePreferenceWidget
 import eu.kanade.presentation.more.settings.widget.PrefsHorizontalPadding
 import eu.kanade.presentation.util.relativeTimeSpanString
 import eu.kanade.tachiyomi.data.backup.create.BackupCreateWorker
+import eu.kanade.tachiyomi.data.backup.drive.DriveFile
+import eu.kanade.tachiyomi.data.backup.drive.GoogleDriveRestoreWorker
 import eu.kanade.tachiyomi.data.backup.restore.BackupRestoreWorker
 import eu.kanade.tachiyomi.data.export.LibraryExporter
 import eu.kanade.tachiyomi.data.export.LibraryExporter.ExportOptions
@@ -288,6 +294,42 @@ object SettingsDataScreen : SearchableSettings {
         val lastUpload by backupPreferences.lastGoogleDriveUploadTimestamp.collectAsState()
         val uploadDownloads by backupPreferences.googleDriveUploadDownloads.collectAsState()
 
+        val navigator = LocalNavigator.currentOrThrow
+        val scope = rememberCoroutineScope()
+        val restorer = remember { context.appGraph.googleDriveRestorer }
+        var driveBackups by remember { mutableStateOf<List<DriveFile>?>(null) }
+        var busy by remember { mutableStateOf(false) }
+
+        // Runs a Drive action, one at a time, and reports failures as a toast
+        fun driveAction(block: suspend () -> Unit) {
+            if (busy) return
+            busy = true
+            scope.launchNonCancellable {
+                try {
+                    withIOContext { block() }
+                } catch (e: Exception) {
+                    logcat(LogPriority.ERROR, e)
+                    withUIContext { context.toast(e.message) }
+                } finally {
+                    busy = false
+                }
+            }
+        }
+
+        driveBackups?.let { backups ->
+            DriveBackupPickerDialog(
+                backups = backups,
+                onPick = { backup ->
+                    driveBackups = null
+                    driveAction {
+                        val uri = restorer.downloadBackup(backup)
+                        withUIContext { navigator.push(RestoreBackupScreen(uri.toString())) }
+                    }
+                },
+                onDismissRequest = { driveBackups = null },
+            )
+        }
+
         fun enable() {
             backupPreferences.googleDriveEnabled.set(true)
             BackupCreateWorker.setupTask(context)
@@ -370,7 +412,84 @@ object SettingsDataScreen : SearchableSettings {
                         context.toast(MR.strings.google_drive_backup_started)
                     },
                 ),
+                Preference.PreferenceItem.TextPreference(
+                    title = stringResource(MR.strings.pref_google_drive_restore_backup),
+                    visible = enabled,
+                    onClick = {
+                        context.toast(MR.strings.google_drive_loading)
+                        driveAction {
+                            val backups = restorer.listBackups()
+                            withUIContext {
+                                if (backups.isEmpty()) {
+                                    context.toast(MR.strings.google_drive_no_backups)
+                                } else {
+                                    driveBackups = backups
+                                }
+                            }
+                        }
+                    },
+                ),
+                Preference.PreferenceItem.TextPreference(
+                    title = stringResource(MR.strings.pref_google_drive_restore_extensions),
+                    subtitle = stringResource(MR.strings.pref_google_drive_restore_extensions_summary),
+                    visible = enabled,
+                    onClick = {
+                        context.toast(MR.strings.google_drive_loading)
+                        driveAction {
+                            val count = restorer.installMissingExtensions()
+                            withUIContext {
+                                if (count == 0) {
+                                    context.toast(MR.strings.google_drive_extensions_none)
+                                } else {
+                                    context.toast(
+                                        context.stringResource(MR.strings.google_drive_extensions_started, count),
+                                    )
+                                }
+                            }
+                        }
+                    },
+                ),
+                Preference.PreferenceItem.TextPreference(
+                    title = stringResource(MR.strings.pref_google_drive_restore_downloads),
+                    subtitle = stringResource(MR.strings.pref_google_drive_restore_downloads_summary),
+                    visible = enabled,
+                    onClick = {
+                        GoogleDriveRestoreWorker.start(context)
+                        context.toast(MR.strings.google_drive_restore_downloads_started)
+                    },
+                ),
             ),
+        )
+    }
+
+    @Composable
+    private fun DriveBackupPickerDialog(
+        backups: List<DriveFile>,
+        onPick: (DriveFile) -> Unit,
+        onDismissRequest: () -> Unit,
+    ) {
+        AlertDialog(
+            onDismissRequest = onDismissRequest,
+            title = { Text(text = stringResource(MR.strings.pref_google_drive_restore_backup)) },
+            text = {
+                Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+                    backups.forEach { backup ->
+                        Text(
+                            text = backup.name,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { onPick(backup) }
+                                .padding(vertical = 12.dp),
+                        )
+                    }
+                }
+            },
+            confirmButton = {},
+            dismissButton = {
+                TextButton(onClick = onDismissRequest) {
+                    Text(text = stringResource(MR.strings.action_cancel))
+                }
+            },
         )
     }
 

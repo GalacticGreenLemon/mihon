@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name" translatable="false">Mihon</string>
+    <string name="app_name" translatable="false">Remon</string>
 
     <!-- Generic strings -->
     <string name="on">On</string>
@@ -632,7 +632,7 @@
     <string name="backup_info">You should keep copies of backups in other places as well. Backups may contain sensitive data including any stored passwords; be careful if sharing.</string>
     <string name="last_auto_backup_info">Last automatically backed up: %s</string>
     <string name="pref_google_drive_backup">Upload automatic backups to Google Drive</string>
-    <string name="pref_google_drive_backup_summary">Saved to the \"Mihon backups\" folder. Last uploaded: %s</string>
+    <string name="pref_google_drive_backup_summary">Saved to the \"Remon backups\" folder. Last uploaded: %s</string>
     <string name="pref_google_drive_max_backups">Backups to keep on Google Drive</string>
     <string name="pref_google_drive_backup_now">Back up to Google Drive now</string>
     <string name="google_drive_backup_started">Backup started</string>
@@ -644,6 +644,17 @@
     <string name="pref_google_drive_upload_downloads">Upload downloaded chapters</string>
     <string name="pref_google_drive_upload_downloads_summary">Copies new downloads to the \"Downloads\" folder as CBZ files. Chapters you delete on the phone stay on Drive</string>
     <string name="pref_google_drive_downloads_wifi_only">Only upload chapters over Wi-Fi</string>
+    <string name="google_drive_downloading">Downloading from Google Drive</string>
+    <string name="pref_google_drive_restore_backup">Restore backup from Google Drive</string>
+    <string name="pref_google_drive_restore_extensions">Install extensions from Google Drive</string>
+    <string name="pref_google_drive_restore_extensions_summary">Installs the uploaded extensions that aren\'t on this device. Restore a backup first, so they\'re trusted</string>
+    <string name="pref_google_drive_restore_downloads">Download chapters from Google Drive</string>
+    <string name="pref_google_drive_restore_downloads_summary">Copies uploaded chapters that aren\'t on this device into the downloads folder</string>
+    <string name="google_drive_loading">Checking Google Drive…</string>
+    <string name="google_drive_no_backups">No backups found on Google Drive</string>
+    <string name="google_drive_extensions_none">All extensions on Google Drive are already installed</string>
+    <string name="google_drive_extensions_started">Installing %d extensions</string>
+    <string name="google_drive_restore_downloads_started">Downloading chapters in the background</string>
     <string name="google_drive_sync_failed">%1$d uploads failed. Last error: %2$s</string>
     <string name="label_data">Data</string>
     <string name="pref_storage_usage">Storage usage</string>

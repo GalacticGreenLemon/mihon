@@ -18,6 +18,8 @@ import eu.kanade.tachiyomi.core.security.PrivacyPreferences
 import eu.kanade.tachiyomi.core.security.SecurityPreferences
 import eu.kanade.tachiyomi.data.backup.create.BackupCreateWorker
 import eu.kanade.tachiyomi.data.backup.drive.GoogleDriveBackupUploader
+import eu.kanade.tachiyomi.data.backup.drive.GoogleDriveRestoreWorker
+import eu.kanade.tachiyomi.data.backup.drive.GoogleDriveRestorer
 import eu.kanade.tachiyomi.data.backup.drive.GoogleDriveSyncWorker
 import eu.kanade.tachiyomi.data.backup.restore.BackupRestoreWorker
 import eu.kanade.tachiyomi.data.cache.ChapterCache
@@ -74,6 +76,7 @@ interface AppGraph : ViewModelGraph {
     fun inject(backupRestoreWorker: BackupRestoreWorker)
     fun inject(backupCreateWorker: BackupCreateWorker)
     fun inject(googleDriveSyncWorker: GoogleDriveSyncWorker)
+    fun inject(googleDriveRestoreWorker: GoogleDriveRestoreWorker)
     fun inject(delayedTrackingUpdateWorker: DelayedTrackingUpdateWorker)
     fun inject(downloadWorker: DownloadWorker)
     fun inject(notificationReceiver: NotificationReceiver)
@@ -100,6 +103,7 @@ interface AppGraph : ViewModelGraph {
     val crashLogUtil: CrashLogUtil
 
     val googleDriveBackupUploader: GoogleDriveBackupUploader
+    val googleDriveRestorer: GoogleDriveRestorer
 
     val downloadManager: DownloadManager
 

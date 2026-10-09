@@ -35,7 +35,7 @@ android {
     namespace = "eu.kanade.tachiyomi"
 
     defaultConfig {
-        applicationId = "app.mihon.custom"
+        applicationId = "app.remon"
 
         versionCode = 35
         versionName = "0.20.4"

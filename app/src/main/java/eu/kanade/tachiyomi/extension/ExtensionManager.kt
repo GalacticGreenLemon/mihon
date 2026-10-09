@@ -41,6 +41,7 @@ import tachiyomi.core.common.util.lang.withUIContext
 import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.source.model.StubSource
 import tachiyomi.i18n.MR
+import java.io.File
 import java.util.Locale
 
 /**
@@ -293,6 +294,15 @@ class ExtensionManager(
         val update = extension.findUpdate(availableExtensionListFlow.value) ?: return emptyFlow()
         val isUpdateForPrivatelyInstalled = !extension.isShared
         return installer.downloadAndInstall(update, isUpdateForPrivatelyInstalled)
+    }
+
+    /**
+     * Installs an extension apk that's already on the device, e.g. one restored from Google Drive.
+     *
+     * @return false if the file isn't a readable apk.
+     */
+    fun installExtensionFile(file: File): Boolean {
+        return installer.installFile(file)
     }
 
     fun cancelInstallUpdateExtension(extension: Extension) {

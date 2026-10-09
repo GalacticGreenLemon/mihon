@@ -81,9 +81,15 @@ class BackupNotifier(
         }
     }
 
-    fun showGoogleDriveProgress(content: String = "", progress: Int = 0, max: Int = 0): NotificationCompat.Builder {
+    fun showGoogleDriveProgress(
+        content: String = "",
+        progress: Int = 0,
+        max: Int = 0,
+        download: Boolean = false,
+    ): NotificationCompat.Builder {
         val builder = with(progressNotificationBuilder) {
-            setContentTitle(context.stringResource(MR.strings.google_drive_uploading))
+            val title = if (download) MR.strings.google_drive_downloading else MR.strings.google_drive_uploading
+            setContentTitle(context.stringResource(title))
             setContentText(content)
             setProgress(max, progress, max == 0)
         }

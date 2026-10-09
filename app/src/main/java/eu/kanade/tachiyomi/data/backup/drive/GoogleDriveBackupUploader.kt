@@ -6,7 +6,7 @@ import dev.zacsweers.metro.Inject
 import tachiyomi.domain.backup.service.BackupPreferences
 
 /**
- * Uploads backup files to the root of the "Mihon backups" Drive folder and prunes old ones.
+ * Uploads backup files to the root of the "Remon backups" Drive folder and prunes old ones.
  */
 @Inject
 class GoogleDriveBackupUploader(

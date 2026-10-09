@@ -41,8 +41,8 @@ import kotlin.coroutines.cancellation.CancellationException
  *
  * Only adds what's missing on Drive, so after the first run it only uploads new things.
  * Layout on Drive:
- * - Mihon backups/Extensions/<package>_v<version>.apk
- * - Mihon backups/Downloads/<source>/<manga>/<chapter>.cbz (same names as the local downloads folder)
+ * - Remon backups/Extensions/<package>_v<version>.apk
+ * - Remon backups/Downloads/<source>/<manga>/<chapter>.cbz (same names as the local downloads folder)
  */
 class GoogleDriveSyncWorker(private val context: Context, workerParams: WorkerParameters) :
     CoroutineWorker(context, workerParams) {
@@ -77,10 +77,10 @@ class GoogleDriveSyncWorker(private val context: Context, workerParams: WorkerPa
         return try {
             val rootId = drive.rootFolder()
             if (backupPreferences.googleDriveUploadExtensions.get()) {
-                uploadExtensions(drive.findOrCreateFolder(EXTENSIONS_FOLDER, rootId))
+                uploadExtensions(drive.findOrCreateFolder(GoogleDriveRestorer.EXTENSIONS_FOLDER, rootId))
             }
             if (backupPreferences.googleDriveUploadDownloads.get()) {
-                uploadDownloads(drive.findOrCreateFolder(DOWNLOADS_FOLDER, rootId))
+                uploadDownloads(drive.findOrCreateFolder(GoogleDriveRestorer.DOWNLOADS_FOLDER, rootId))
             }
             if (failures > 0) {
                 notifier.showGoogleDriveUploadError(
@@ -223,8 +223,6 @@ class GoogleDriveSyncWorker(private val context: Context, workerParams: WorkerPa
 
     companion object {
         private const val TAG = "GoogleDriveSync"
-        private const val EXTENSIONS_FOLDER = "Extensions"
-        private const val DOWNLOADS_FOLDER = "Downloads"
 
         /** Starts an upload run if extensions or downloads are set to be uploaded. */
         fun start(context: Context) {

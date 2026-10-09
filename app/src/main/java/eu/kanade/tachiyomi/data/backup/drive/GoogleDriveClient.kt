@@ -22,13 +22,14 @@ import org.json.JSONArray
 import org.json.JSONObject
 import tachiyomi.domain.backup.service.BackupPreferences
 import java.io.InputStream
+import java.io.OutputStream
 import kotlin.time.Duration.Companion.minutes
 
 /**
  * Minimal Google Drive REST client.
  *
  * Uses the `drive.file` scope, so the app can only see files and folders it created itself.
- * Everything is stored below a "Mihon backups" folder in the root of the user's Drive.
+ * Everything is stored below a "Remon backups" folder in the root of the user's Drive.
  */
 @Inject
 class GoogleDriveClient(
@@ -53,7 +54,7 @@ class GoogleDriveClient(
         return if (result.hasResolution()) result.pendingIntent else null
     }
 
-    /** The "Mihon backups" folder, created if needed. */
+    /** The "Remon backups" folder, created if needed. */
     suspend fun rootFolder(): String {
         backupPreferences.googleDriveFolderId.get().takeIf { it.isNotEmpty() }?.let { id ->
             // Make sure the folder still exists and wasn't trashed
@@ -66,14 +67,31 @@ class GoogleDriveClient(
             if (exists) return id
         }
 
-        val id = createFolder(ROOT_FOLDER_NAME, parentId = null)
+        // After a reinstall the folder is still there and the app can still see it, since it created it
+        val id = findRootFolder() ?: createFolder(ROOT_FOLDER_NAME, parentId = null)
         backupPreferences.googleDriveFolderId.set(id)
         return id
     }
 
-    suspend fun findOrCreateFolder(name: String, parentId: String): String {
+    private suspend fun findRootFolder(): String? {
+        val url = FILES_URL.toHttpUrl().newBuilder()
+            .addQueryParameter(
+                "q",
+                "name = '$ROOT_FOLDER_NAME' and mimeType = '$FOLDER_MIME_TYPE' and 'root' in parents and trashed = false",
+            )
+            .addQueryParameter("orderBy", "createdTime")
+            .addQueryParameter("fields", "files(id)")
+            .build()
+        val files = execute(Request.Builder().url(url)).getJSONArray("files")
+        return if (files.length() > 0) files.getJSONObject(0).getString("id") else null
+    }
+
+    suspend fun findFolder(name: String, parentId: String): String? {
         return listChildren(parentId).firstOrNull { it.name == name && it.isFolder }?.id
-            ?: createFolder(name, parentId)
+    }
+
+    suspend fun findOrCreateFolder(name: String, parentId: String): String {
+        return findFolder(name, parentId) ?: createFolder(name, parentId)
     }
 
     /** Lists the files and folders directly inside [parentId], newest first. */
@@ -139,6 +157,14 @@ class GoogleDriveClient(
         client.newCall(Request.Builder().url(sessionUrl).put(body).build()).awaitSuccess().close()
     }
 
+    /** Streams the content of a file into [output]. */
+    suspend fun download(id: String, output: OutputStream) {
+        val request = Request.Builder().url("$FILES_URL/$id?alt=media").authorized().build()
+        client.newCall(request).awaitSuccess().use { response ->
+            response.body.byteStream().use { it.copyTo(output) }
+        }
+    }
+
     suspend fun delete(id: String) {
         client.newCall(Request.Builder().url("$FILES_URL/$id").delete().authorized().build()).awaitSuccess().close()
     }
@@ -173,7 +199,7 @@ class GoogleDriveClient(
         private const val DRIVE_FILE_SCOPE = "https://www.googleapis.com/auth/drive.file"
         private const val FILES_URL = "https://www.googleapis.com/drive/v3/files"
         private const val UPLOAD_URL = "https://www.googleapis.com/upload/drive/v3/files"
-        private const val ROOT_FOLDER_NAME = "Mihon backups"
+        private const val ROOT_FOLDER_NAME = "Remon backups"
         private const val FOLDER_MIME_TYPE = "application/vnd.google-apps.folder"
         private val JSON_MEDIA_TYPE = "application/json; charset=UTF-8".toMediaType()
         private val BINARY_MEDIA_TYPE = "application/octet-stream".toMediaType()

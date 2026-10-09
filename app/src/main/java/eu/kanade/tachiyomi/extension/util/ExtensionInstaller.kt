@@ -110,6 +110,15 @@ class ExtensionInstaller(
     }
 
     /**
+     * Installs an apk that's already on the device, using the user's chosen installer.
+     */
+    fun installFile(file: File): Boolean {
+        val packageInfo = ExtensionLoader.getArchivePackageInfo(context, file) ?: return false
+        installApk(packageInfo.packageName.hashCode().toLong(), file, packageInfo)
+        return true
+    }
+
+    /**
      * Starts an intent to install the extension at the given uri.
      *
      * @param tempFile The file of the extension to install. Delete after use.
