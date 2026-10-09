@@ -17,6 +17,7 @@ import eu.kanade.tachiyomi.App
 import eu.kanade.tachiyomi.core.security.PrivacyPreferences
 import eu.kanade.tachiyomi.core.security.SecurityPreferences
 import eu.kanade.tachiyomi.data.backup.create.BackupCreateWorker
+import eu.kanade.tachiyomi.data.backup.drive.GoogleDriveBackupUploader
 import eu.kanade.tachiyomi.data.backup.restore.BackupRestoreWorker
 import eu.kanade.tachiyomi.data.cache.ChapterCache
 import eu.kanade.tachiyomi.data.cache.CoverCache
@@ -95,6 +96,8 @@ interface AppGraph : ViewModelGraph {
     val downloadPreferences: DownloadPreferences
 
     val crashLogUtil: CrashLogUtil
+
+    val googleDriveBackupUploader: GoogleDriveBackupUploader
 
     val downloadManager: DownloadManager
 

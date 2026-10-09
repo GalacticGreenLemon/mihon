@@ -631,6 +631,13 @@
     <string name="restoring_backup_canceled">Canceled restore</string>
     <string name="backup_info">You should keep copies of backups in other places as well. Backups may contain sensitive data including any stored passwords; be careful if sharing.</string>
     <string name="last_auto_backup_info">Last automatically backed up: %s</string>
+    <string name="pref_google_drive_backup">Upload automatic backups to Google Drive</string>
+    <string name="pref_google_drive_backup_summary">Saved to the \"Mihon backups\" folder. Last uploaded: %s</string>
+    <string name="pref_google_drive_max_backups">Backups to keep on Google Drive</string>
+    <string name="pref_google_drive_backup_now">Back up to Google Drive now</string>
+    <string name="google_drive_backup_started">Backup started</string>
+    <string name="google_drive_auth_failed">Couldn\'t connect to Google Drive: %s</string>
+    <string name="google_drive_upload_error">Google Drive upload failed</string>
     <string name="label_data">Data</string>
     <string name="pref_storage_usage">Storage usage</string>
     <string name="available_disk_space_info">Available: %1$s / Total: %2$s</string>

@@ -70,6 +70,16 @@ class BackupNotifier(
         }
     }
 
+    fun showGoogleDriveUploadError(error: String?) {
+        with(completeNotificationBuilder) {
+            setContentTitle(context.stringResource(MR.strings.google_drive_upload_error))
+            setContentText(error)
+            clearActions()
+
+            show(Notifications.ID_BACKUP_COMPLETE)
+        }
+    }
+
     fun showBackupComplete(file: UniFile) {
         context.cancelNotification(Notifications.ID_BACKUP_PROGRESS)
 

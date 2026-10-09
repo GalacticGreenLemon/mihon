@@ -1,10 +1,12 @@
 package eu.kanade.presentation.more.settings.screen
 
+import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
 import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -38,6 +40,7 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.core.net.toUri
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import com.google.android.gms.auth.api.identity.Identity
 import com.hippo.unifile.UniFile
 import eu.kanade.presentation.more.settings.Preference
 import eu.kanade.presentation.more.settings.screen.data.CreateBackupScreen
@@ -62,6 +65,7 @@ import mihon.icons.materialsymbols.automirroredrounded.Help
 import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.core.common.storage.displayablePath
 import tachiyomi.core.common.util.lang.launchNonCancellable
+import tachiyomi.core.common.util.lang.withIOContext
 import tachiyomi.core.common.util.lang.withUIContext
 import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.backup.service.BackupPreferences
@@ -103,6 +107,7 @@ object SettingsDataScreen : SearchableSettings {
             Preference.PreferenceItem.InfoPreference(stringResource(MR.strings.pref_storage_location_info)),
 
             getBackupAndRestoreGroup(backupPreferences = backupPreferences),
+            getGoogleDriveGroup(backupPreferences = backupPreferences),
             getDataGroup(),
             getExportGroup(),
         )
@@ -269,6 +274,83 @@ object SettingsDataScreen : SearchableSettings {
                 Preference.PreferenceItem.InfoPreference(
                     stringResource(MR.strings.backup_info) + "\n\n" +
                         stringResource(MR.strings.last_auto_backup_info, relativeTimeSpanString(lastAutoBackup)),
+                ),
+            ),
+        )
+    }
+
+    @Composable
+    private fun getGoogleDriveGroup(backupPreferences: BackupPreferences): Preference.PreferenceGroup {
+        val context = LocalContext.current
+        val uploader = remember { context.appGraph.googleDriveBackupUploader }
+
+        val enabled by backupPreferences.googleDriveEnabled.collectAsState()
+        val lastUpload by backupPreferences.lastGoogleDriveUploadTimestamp.collectAsState()
+
+        fun enable() {
+            backupPreferences.googleDriveEnabled.set(true)
+            BackupCreateWorker.setupTask(context)
+        }
+
+        val authorize = rememberLauncherForActivityResult(
+            ActivityResultContracts.StartIntentSenderForResult(),
+        ) { result ->
+            if (result.resultCode != Activity.RESULT_OK) return@rememberLauncherForActivityResult
+            try {
+                Identity.getAuthorizationClient(context).getAuthorizationResultFromIntent(result.data)
+                enable()
+            } catch (e: Exception) {
+                logcat(LogPriority.ERROR, e)
+                context.toast(context.stringResource(MR.strings.google_drive_auth_failed, e.message.orEmpty()))
+            }
+        }
+
+        return Preference.PreferenceGroup(
+            title = "Google Drive",
+            preferenceItems = listOf(
+                Preference.PreferenceItem.SwitchPreference(
+                    preference = backupPreferences.googleDriveEnabled,
+                    title = stringResource(MR.strings.pref_google_drive_backup),
+                    subtitle = stringResource(
+                        MR.strings.pref_google_drive_backup_summary,
+                        relativeTimeSpanString(lastUpload),
+                    ),
+                    onValueChanged = { newValue ->
+                        if (!newValue) {
+                            backupPreferences.googleDriveEnabled.set(false)
+                            BackupCreateWorker.setupTask(context)
+                        } else {
+                            try {
+                                val pendingIntent = withIOContext { uploader.requestAuthorization() }
+                                if (pendingIntent == null) {
+                                    enable()
+                                } else {
+                                    authorize.launch(IntentSenderRequest.Builder(pendingIntent).build())
+                                }
+                            } catch (e: Exception) {
+                                logcat(LogPriority.ERROR, e)
+                                context.toast(
+                                    context.stringResource(MR.strings.google_drive_auth_failed, e.message.orEmpty()),
+                                )
+                            }
+                        }
+                        // The preference is set above, and only once access has actually been granted
+                        false
+                    },
+                ),
+                Preference.PreferenceItem.ListPreference(
+                    preference = backupPreferences.googleDriveMaxBackups,
+                    entries = listOf(3, 5, 10, 20, 50).associateWith { it.toString() },
+                    title = stringResource(MR.strings.pref_google_drive_max_backups),
+                    visible = enabled,
+                ),
+                Preference.PreferenceItem.TextPreference(
+                    title = stringResource(MR.strings.pref_google_drive_backup_now),
+                    visible = enabled,
+                    onClick = {
+                        BackupCreateWorker.startAutoBackupNow(context)
+                        context.toast(MR.strings.google_drive_backup_started)
+                    },
                 ),
             ),
         )

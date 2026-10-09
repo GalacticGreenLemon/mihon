@@ -1,0 +1,76 @@
+name: Build personal APK
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '**.md'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  # Makes app/build.gradle.kts sign with the keystore passed in the env vars below
+  MIHON_GITHUB_RELEASE: true
+
+jobs:
+  build:
+    name: Build signed APK
+    runs-on: 'ubuntu-26.04'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Check signing secrets
+        env:
+          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
+        run: |
+          if [ -z "$SIGNING_KEY" ]; then
+            echo "::error::Add the SIGNING_KEY, KEY_STORE_PASSWORD, ALIAS and KEY_PASSWORD repository secrets first (see CUSTOM.md)"
+            exit 1
+          fi
+
+      - name: Set up JDK
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          java-version-file: .github/.java-version
+          distribution: temurin
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
+
+      - name: Decode signing keystore
+        run: echo "$SIGNING_KEY" | base64 -d > "${{ runner.temp }}/personal.keystore"
+        env:
+          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
+
+      - name: Build
+        # Local distribution: no telemetry and no updater (it would point at the official releases)
+        run: ./gradlew assembleRelease
+        env:
+          storeFile: ${{ runner.temp }}/personal.keystore
+          storePassword: ${{ secrets.KEY_STORE_PASSWORD }}
+          keyAlias: ${{ secrets.ALIAS }}
+          keyPassword: ${{ secrets.KEY_PASSWORD }}
+
+      - name: Print signing certificate SHA-1
+        # Paste this into the Android OAuth client in Google Cloud Console
+        run: |
+          keytool -list -v -keystore "${{ runner.temp }}/personal.keystore" -storepass "$STORE_PASSWORD" \
+            | grep -E "Alias name|SHA1"
+        env:
+          STORE_PASSWORD: ${{ secrets.KEY_STORE_PASSWORD }}
+
+      - name: Upload APK
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: mihon-custom-${{ github.sha }}
+          path: |
+            app/build/outputs/apk/release/app-arm64-v8a-release.apk
+            app/build/outputs/apk/release/app-universal-release.apk

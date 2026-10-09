@@ -11,6 +11,7 @@ import androidx.work.CoroutineWorker
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.ExistingWorkPolicy
 import androidx.work.ForegroundInfo
+import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkerParameters
@@ -18,6 +19,7 @@ import androidx.work.workDataOf
 import com.hippo.unifile.UniFile
 import dev.zacsweers.metro.Inject
 import eu.kanade.tachiyomi.data.backup.BackupNotifier
+import eu.kanade.tachiyomi.data.backup.drive.GoogleDriveBackupUploader
 import eu.kanade.tachiyomi.data.backup.restore.BackupRestoreWorker
 import eu.kanade.tachiyomi.data.notification.Notifications
 import eu.kanade.tachiyomi.util.system.cancelNotification
@@ -29,8 +31,10 @@ import mihon.app.di.AppGraph
 import mihon.app.di.appGraph
 import mihon.core.metro.metroGraph
 import tachiyomi.core.common.util.system.logcat
+import tachiyomi.domain.backup.service.BackupPreferences
 import tachiyomi.domain.storage.service.StorageManager
 import java.util.concurrent.TimeUnit
+import kotlin.time.Clock
 
 class BackupCreateWorker(private val context: Context, workerParams: WorkerParameters) :
     CoroutineWorker(context, workerParams) {
@@ -44,6 +48,12 @@ class BackupCreateWorker(private val context: Context, workerParams: WorkerParam
     private lateinit var storageManager: StorageManager
 
     @Inject private lateinit var notifier: BackupNotifier
+
+    @Inject
+    private lateinit var backupPreferences: BackupPreferences
+
+    @Inject
+    private lateinit var googleDriveUploader: GoogleDriveBackupUploader
 
     override suspend fun doWork(): Result {
         graph.inject(this)
@@ -65,6 +75,8 @@ class BackupCreateWorker(private val context: Context, workerParams: WorkerParam
             val location = backupCreatorFactory.create(isAutoBackup = isAutoBackup).backup(uri, options)
             if (!isAutoBackup) {
                 notifier.showBackupComplete(UniFile.fromUri(context, location.toUri())!!)
+            } else if (backupPreferences.googleDriveEnabled.get()) {
+                uploadToGoogleDrive(location)
             }
             Result.success()
         } catch (e: Exception) {
@@ -73,6 +85,17 @@ class BackupCreateWorker(private val context: Context, workerParams: WorkerParam
             Result.failure()
         } finally {
             context.cancelNotification(Notifications.ID_BACKUP_PROGRESS)
+        }
+    }
+
+    private suspend fun uploadToGoogleDrive(location: String) {
+        // The local backup already succeeded, so a failed upload shouldn't fail the whole job
+        try {
+            googleDriveUploader.upload(UniFile.fromUri(context, location.toUri())!!)
+            backupPreferences.lastGoogleDriveUploadTimestamp.set(Clock.System.now().toEpochMilliseconds())
+        } catch (e: Exception) {
+            logcat(LogPriority.ERROR, e) { "Failed to upload backup to Google Drive" }
+            notifier.showGoogleDriveUploadError(e.message)
         }
     }
 
@@ -102,6 +125,11 @@ class BackupCreateWorker(private val context: Context, workerParams: WorkerParam
             val interval = prefInterval ?: backupPreferences.backupInterval.get()
             if (interval > 0) {
                 val constraints = Constraints(
+                    requiredNetworkType = if (backupPreferences.googleDriveEnabled.get()) {
+                        NetworkType.CONNECTED
+                    } else {
+                        NetworkType.NOT_REQUIRED
+                    },
                     requiresBatteryNotLow = true,
                 )
 
@@ -123,6 +151,17 @@ class BackupCreateWorker(private val context: Context, workerParams: WorkerParam
             }
         }
 
+        /**
+         * Runs an automatic backup right away, which also uploads it to Google Drive if enabled.
+         */
+        fun startAutoBackupNow(context: Context) {
+            val request = OneTimeWorkRequestBuilder<BackupCreateWorker>()
+                .addTag(TAG_AUTO_NOW)
+                .setInputData(workDataOf(IS_AUTO_BACKUP_KEY to true))
+                .build()
+            context.workManager.enqueueUniqueWork(TAG_AUTO_NOW, ExistingWorkPolicy.KEEP, request)
+        }
+
         fun startNow(context: Context, uri: Uri, options: BackupOptions) {
             val inputData = workDataOf(
                 IS_AUTO_BACKUP_KEY to false,
@@ -140,6 +179,7 @@ class BackupCreateWorker(private val context: Context, workerParams: WorkerParam
 
 private const val TAG_AUTO = "BackupCreator"
 private const val TAG_MANUAL = "$TAG_AUTO:manual"
+private const val TAG_AUTO_NOW = "$TAG_AUTO:now"
 
 private const val IS_AUTO_BACKUP_KEY = "is_auto_backup" // Boolean
 private const val LOCATION_URI_KEY = "location_uri" // String

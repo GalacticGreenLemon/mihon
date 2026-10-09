@@ -18,4 +18,18 @@ class BackupPreferences(
         Preference.appStateKey("last_auto_backup_timestamp"),
         0L,
     )
+
+    val googleDriveEnabled: Preference<Boolean> = preferenceStore.getBoolean("google_drive_backup_enabled", false)
+
+    val googleDriveMaxBackups: Preference<Int> = preferenceStore.getInt("google_drive_max_backups", 10)
+
+    val googleDriveFolderId: Preference<String> = preferenceStore.getString(
+        Preference.appStateKey("google_drive_folder_id"),
+        "",
+    )
+
+    val lastGoogleDriveUploadTimestamp: Preference<Long> = preferenceStore.getLong(
+        Preference.appStateKey("last_google_drive_upload_timestamp"),
+        0L,
+    )
 }

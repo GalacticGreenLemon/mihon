@@ -35,7 +35,7 @@ android {
     namespace = "eu.kanade.tachiyomi"
 
     defaultConfig {
-        applicationId = "app.mihon"
+        applicationId = "app.mihon.custom"
 
         versionCode = 35
         versionName = "0.20.4"
@@ -255,6 +255,10 @@ dependencies {
 
     // Job scheduling
     implementation(libs.androidx.work)
+
+    // Google Drive backups
+    implementation(libs.playServices.auth)
+    implementation(libs.kotlinx.coroutines.playServices)
 
     // RxJava
     implementation(libs.rxJava)
