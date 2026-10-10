@@ -95,6 +95,8 @@ class ExtensionManager(
     val notLoadedExtensionsFlow = notLoadedExtensionMapFlow.mapExtensionsWhenInitialized()
 
     init {
+        scope.launch(Dispatchers.IO) { addDefaultStore() }
+
         scope.launch(Dispatchers.IO) {
             loadExtensions()
             ExtensionInstallReceiver(InstallationListener()).register(context)
@@ -113,6 +115,21 @@ class ExtensionManager(
         scope.launch(Dispatchers.IO) {
             initialized.await()
             extensionStoreRepository.getAllAsFlow().collect(::assignStores)
+        }
+    }
+
+    /**
+     * Adds [DEFAULT_STORE_URL] once. Retried on the next start if there's no connection, and
+     * never re-added after the user removes it.
+     */
+    private suspend fun addDefaultStore() {
+        if (preferences.defaultExtensionStoreAdded.get()) return
+
+        val alreadyAdded = extensionStoreRepository.getAll().any { it.indexUrl == DEFAULT_STORE_URL }
+        if (alreadyAdded || extensionStoreRepository.insert(DEFAULT_STORE_URL).isSuccess) {
+            preferences.defaultExtensionStoreAdded.set(true)
+        } else {
+            logcat(LogPriority.WARN) { "Couldn't add the default extension store, retrying on next start" }
         }
     }
 
@@ -454,3 +471,6 @@ class ExtensionManager(
         return onStart { initialized.await() }.map { it.values.toList() }
     }
 }
+
+// Added on first start; it can be removed in Settings → Browse → Extension stores like any other store
+private const val DEFAULT_STORE_URL = "https://github.com/keiyoushi/extensions/raw/repo/index.pb"
